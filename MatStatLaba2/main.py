@@ -4,6 +4,7 @@ from openpyxl import load_workbook
 import matplotlib.ticker as ticker
 from scipy.stats import t
 from scipy.stats import chi2
+from scipy.stats import f
 from scipy.stats import norm
 import math
 
@@ -13,13 +14,21 @@ F = 0.334
 
 class Interval:
 
-    def __init__(self):
-        self.interval = []
-        self.name = ""
-        self.right_param = 0
+    def __init__(self, interval, name, right_param):
+        self.interval = interval
+        self.name = name
+        self.right_param = right_param
 
     def __str__(self):
+
         return f"{self.name}: {self.interval} right param was = {self.right_param}"
+
+    def __eq__(self, other):
+
+        return (self.interval[1] - self.interval[0]) == (other.interval[1] - other.interval[0])
+
+    def __gt__(self, other):
+        return (self.interval[1] - self.interval[0]) > (other.interval[1] - other.interval[0])
 
 
 def read_data():
@@ -65,11 +74,10 @@ def get_plot_to_interval(data1, data2, name):
     locator = int(max(data1[1], data1[0], data2[1], data2[0])) - int(min(data1[1], data1[0], data2[1], data2[0]))
 
     if locator < 10:
-        locator = 1
+        locator = 0
     else:
         locator = int((locator - locator % 10) / 10)
-
-    ax.xaxis.set_major_locator(ticker.MultipleLocator(locator))
+        ax.xaxis.set_major_locator(ticker.MultipleLocator(locator))
 
     ax.plot([data1[0], data1[1]], [1, 1], label='zeros', zorder=1)
     ax.plot([data2[0], data2[1]], [1, 1], label='ones', zorder=1)
@@ -91,6 +99,39 @@ def get_plot_to_interval(data1, data2, name):
     plt.legend()
     plt.savefig(f'plots/{name}.png')
     # plt.show()
+
+
+def get_plot(interval, name):
+    fig, ax = plt.subplots()
+    plt.title(name)
+
+    ax.plot([interval[0], interval[1]], [1, 1], zorder=1)
+    ax.scatter([interval[0], interval[1]], [1, 1], zorder=2)
+    dot1 = float('{:.2f}'.format(interval[0]))
+    dot2 = float('{:.2f}'.format(interval[1]))
+
+    ax.annotate(f'{dot1}', (interval[0], 1), xytext=(interval[0], 1 + 0.007))
+    ax.annotate(f'{dot2}', (interval[0], 1), xytext=(interval[1], 1 + 0.007))
+    plt.savefig(f'plots/{name}.png')
+    # plt.show()
+
+
+def get_compare_plot(intervals, name1, name2):
+    fig, ax = plt.subplots()
+    plt.title(f"comparing plot for {name2}")
+
+    i = 1
+    for interval in intervals:
+        ax.plot([interval.interval[0], interval.interval[1]], [i, i], zorder=1)
+        ax.scatter([interval.interval[0], interval.interval[1]], [i, i], zorder=2)
+        ax.annotate(f'{interval.name}', (interval.interval[0], 1), xytext=(100, i + 0.05))
+        i += 1
+
+    ax.vlines(intervals[0].right_param, 0, 5, color='r', linestyle='--', label=f"{name1}", lw=1)
+    plt.legend()
+    # plt.show()
+
+    plt.savefig(f'plots/means_comparing_for_{name2}.png')
 
 
 def get_interval_to_variance_by_unknown_mean_and_variance(data):
@@ -159,29 +200,34 @@ def get_interval_to_Ex_minus_Ey(data1, data2):
 def get_interval_to_Dx_div_Dy(data1, data2):
     n = len(data1)
     m = len(data2)
-    ppf1 = t.ppf((1 + alpha) / 2, n - 1, m - 1)
-    ppf2 = t.ppf((1 - alpha) / 2, n - 1, m - 1)
+    ppf1 = f.ppf((1 + alpha) / 2, n - 1, m - 1)
+    ppf2 = f.ppf((1 - alpha) / 2, n - 1, m - 1)
 
     param = (n * (m - 1) * np.var(data1)) / (m * (n - 1) * np.var(data2))
 
     return param / ppf1, param / ppf2
 
 
-def get_plot(interval, name):
-    fig, ax = plt.subplots()
-    plt.title(name)
+def comparing(array):
+    var_z = []
+    mean_z = []
+    var_o = []
+    mean_o = []
 
-    ax.plot([interval[0], interval[1]], [1, 1], zorder=1)
-    ax.scatter([interval[0], interval[1]], [1, 1], zorder=2)
+    for interval in array:
+        if interval.name.find("exp") == -1 and interval.name.find("div") == -1 and interval.name.find("minus") == -1:
+            if interval.name.find("zero") != -1:
+                if interval.name.find("mean") == -1:
+                    var_z.append(interval)
+                else:
+                    mean_z.append(interval)
+            else:
+                if interval.name.find("mean") == -1:
+                    var_o.append(interval)
+                else:
+                    mean_o.append(interval)
 
-    # ax.annotate(f'{dot1}', (data1[0], 1), xytext=(x1, 1 + 0.007))
-    # ax.annotate(f'{dot2}', (data1[1], 1), xytext=(x2, 1 + 0.007))
-    # ax.annotate(f'{dot3}', (data2[0], 1), xytext=(x3, 1 - 0.007))
-    # ax.annotate(f'{dot4}', (data1[1], 1), xytext=(x4, 1 - 0.007))
-
-    plt.legend()
-    plt.savefig(f'plots/{name}.png')
-    # plt.show()
+    return min(mean_z), min(var_z), min(mean_o), min(var_o)
 
 
 if __name__ == "__main__":
@@ -192,139 +238,110 @@ if __name__ == "__main__":
     mean_zeros = np.mean(zeros_data)
     mean_ones = np.mean(ones_data)
 
+    intervals_for_compare_for_mean_for_zero = []
+    intervals_for_compare_for_mean_for_one = []
+
     # 1
     interval_to_mean_By_unknown_var_and_mean_zeros = get_interval_to_mean_by_unknown_mean_and_variance(zeros_data)
     interval_to_mean_By_unknown_var_and_mean_ones = get_interval_to_mean_by_unknown_mean_and_variance(ones_data)
-    get_plot_to_interval(interval_to_mean_By_unknown_var_and_mean_zeros,
-                         interval_to_mean_By_unknown_var_and_mean_ones,
-                         "interval_to_mean_By_unknown_var_and_mean")
 
-    i1 = Interval()
-    i1.interval = interval_to_mean_By_unknown_var_and_mean_zeros
-    i1.name = "Interval to mean by unknown variance and mean for zeros data"
-    i1.right_param = mean_zeros
+    i1 = Interval(interval_to_mean_By_unknown_var_and_mean_zeros,
+                  "Interval to mean by unknown variance and mean for zeros data", mean_zeros)
+    i2 = Interval(interval_to_mean_By_unknown_var_and_mean_ones,
+                  "Interval to mean by unknown variance and mean for ones data", mean_ones)
 
-    i2 = Interval()
-    i2.interval = interval_to_mean_By_unknown_var_and_mean_ones
-    i2.name = "Interval to mean by unknown variance and mean for ones data"
-    i2.right_param = mean_ones
+    intervals_for_compare_for_mean_for_zero.append(i1)
+    intervals_for_compare_for_mean_for_one.append(i2)
 
     # 2
     interval_to_var_By_unknown_var_and_mean_zeros = get_interval_to_variance_by_unknown_mean_and_variance(zeros_data)
     interval_to_var_By_unknown_var_and_mean_ones = get_interval_to_variance_by_unknown_mean_and_variance(ones_data)
-    get_plot_to_interval(interval_to_var_By_unknown_var_and_mean_zeros,
-                         interval_to_var_By_unknown_var_and_mean_ones,
-                         "interval_to_variance_By_unknown_var_and_mean")
 
-    i3 = Interval()
-    i3.interval = interval_to_var_By_unknown_var_and_mean_zeros
-    i3.name = "Interval to variance by unknown variance and mean for zeros data"
-    i3.right_param = variance_zeros
-
-    i4 = Interval()
-    i4.interval = interval_to_var_By_unknown_var_and_mean_ones
-    i4.name = "Interval to variance by unknown variance and mean for ones data"
-    i4.right_param = variance_ones
+    i3 = Interval(interval_to_var_By_unknown_var_and_mean_zeros,
+                  "Interval to variance by unknown variance and mean for zeros data", variance_zeros)
+    i4 = Interval(interval_to_var_By_unknown_var_and_mean_ones,
+                  "Interval to variance by unknown variance and mean for ones data", variance_ones)
 
     # 3
     interval_to_var_zeros = get_interval_to_variance_normal_distr(zeros_data)
     interval_to_var_ones = get_interval_to_variance_normal_distr(ones_data)
-    get_plot_to_interval(interval_to_var_zeros, interval_to_var_ones, "interval_to_variance")
-
-    i5 = Interval()
-    i5.interval = interval_to_var_zeros
-    i5.name = "Interval to variance for zeros data"
-    i5.right_param = variance_zeros
-
-    i6 = Interval()
-    i6.interval = interval_to_var_ones
-    i6.name = "Interval to variance for ones data"
-    i6.right_param = variance_ones
+    i5 = Interval(interval_to_var_zeros, "Interval to variance for zeros data", variance_zeros)
+    i6 = Interval(interval_to_var_ones, "Interval to variance for ones data", variance_ones)
 
     # 4
     interval_to_mean_zeros = get_interval_to_mean_normal_distr(zeros_data)
     interval_to_mean_ones = get_interval_to_mean_normal_distr(ones_data)
-    get_plot_to_interval(interval_to_mean_zeros, interval_to_mean_ones, "interval_to_mean")
+    i7 = Interval(interval_to_mean_zeros, "Interval to mean for zeros data", mean_zeros)
+    i8 = Interval(interval_to_mean_ones, "Interval to mean for ones data", mean_ones)
 
-    i7 = Interval()
-    i7.interval = interval_to_mean_zeros
-    i7.name = "Interval to mean for zeros data"
-    i7.right_param = mean_zeros
-
-    i8 = Interval()
-    i8.interval = interval_to_mean_ones
-    i8.name = "Interval to mean for ones data"
-    i8.right_param = mean_ones
+    intervals_for_compare_for_mean_for_zero.append(i7)
+    intervals_for_compare_for_mean_for_one.append(i8)
 
     # 5
     interval_to_mean_exp_distr_zeros = get_interval_to_mean_exponential_distribution(zeros_data)
     interval_to_mean_exp_distr_ones = get_interval_to_mean_exponential_distribution(ones_data)
-    get_plot_to_interval(interval_to_mean_exp_distr_zeros,
-                         interval_to_mean_exp_distr_ones,
-                         "interval to mean exp distr case")
+    i9 = Interval(interval_to_mean_exp_distr_zeros, "Interval to mean for zeros data in exp distr case", mean_zeros)
+    i10 = Interval(interval_to_mean_exp_distr_ones, "Interval to mean for ones data in exp distr case", mean_ones)
 
-    i9 = Interval()
-    i9.interval = interval_to_mean_exp_distr_zeros
-    i9.name = "Interval to mean for zeros data in exp distr case"
-    i9.right_param = mean_zeros
-
-    i10 = Interval()
-    i10.interval = interval_to_mean_exp_distr_ones
-    i10.name = "Interval to mean for ones data in exp distr case"
-    i10.right_param = mean_ones
+    intervals_for_compare_for_mean_for_zero.append(i9)
+    intervals_for_compare_for_mean_for_one.append(i10)
 
     # 6
     interval_to_mean_z = get_interval_to_mean(zeros_data)
     interval_to_mean_o = get_interval_to_mean(ones_data)
-    get_plot_to_interval(interval_to_mean_z, interval_to_mean_o, "interval_to_mean_large_N")
+    i11 = Interval(interval_to_mean_z, "Interval to mean for zeros data in large N case", mean_zeros)
+    i12 = Interval(interval_to_mean_o, "Interval to mean for ones data in large N case", mean_ones)
 
-    i11 = Interval()
-    i11.interval = interval_to_mean_z
-    i11.name = "Interval to mean for zeros data in large N case"
-    i11.right_param = mean_zeros
-
-    i11 = Interval()
-    i11.interval = interval_to_mean_o
-    i11.name = "Interval to mean for ones data in large N case"
-    i11.right_param = mean_ones
-
-    interval_to_var_z = get_interval_to_var(zeros_data)
-    interval_to_var_o = get_interval_to_var(ones_data)
-    get_plot_to_interval(interval_to_var_z, interval_to_var_o, "interval_to_variance_large_N")
+    intervals_for_compare_for_mean_for_zero.append(i11)
+    intervals_for_compare_for_mean_for_one.append(i12)
 
     # 7
-    i12 = Interval()
-    i12.interval = interval_to_var_z
-    i12.name = "Interval to variance in large N case for zeros data"
-    i12.right_param = variance_zeros
-
-    i13 = Interval()
-    i13.interval = interval_to_var_o
-    i13.name = "Interval to variance in large N case for ones data"
-    i13.right_param = variance_ones
+    interval_to_var_z = get_interval_to_var(zeros_data)
+    interval_to_var_o = get_interval_to_var(ones_data)
+    i13 = Interval(interval_to_var_z, "Interval to variance in large N case for zeros data", variance_zeros)
+    i14 = Interval(interval_to_var_o, "Interval to variance in large N case for ones data", variance_ones)
 
     # 8
     interval_diff_Ex_Ey = get_interval_to_Ex_minus_Ey(zeros_data, ones_data)
-    get_plot(interval_diff_Ex_Ey, "Ex minus Ey")
-
-    i14 = Interval()
-    i14.interval = interval_diff_Ex_Ey
-    i14.name = "Ex minus Ey"
-    i14.right_param = mean_zeros - mean_ones
-
+    i15 = Interval(interval_diff_Ex_Ey, "Ex minus Ey", mean_zeros - mean_ones)
     interval_div_Dx_Dy = get_interval_to_Dx_div_Dy(zeros_data, ones_data)
-    get_plot(interval_div_Dx_Dy, "Dx div Dy")
+    i16 = Interval(interval_div_Dx_Dy, "Dx div Dy", variance_zeros / variance_ones)
 
-    i15 = Interval()
-    i15.interval = interval_div_Dx_Dy
-    i15.name = "Dx div Dy"
-    i15.right_param = variance_zeros / variance_ones
-
-    intervals = [i1, i2, i3, i4, i5, i6, i7, i8, i9, i10, i11, i12, i13, i14, i15]
+    intervals = [i1, i2, i3, i4, i5, i6, i7, i8, i9, i10, i11, i12, i13, i14, i15, i16]
 
     for i in intervals:
         print(i)
+    print()
 
+    best_mean_z, best_var_z, best_mean_o, best_var_o = comparing(intervals)
+
+    print(f"Beast interval for mean for zeros data = {best_mean_z}")
+    print(f"Best interval for variance for zeros data = {best_var_z}")
+    print(f"Beast interval for mean for ones data = {best_mean_o}")
+    print(f"Best interval for variance for ones data = {best_var_o}")
+
+    get_compare_plot(intervals_for_compare_for_mean_for_zero, "Выборочное среднее", "zeros")
+    get_compare_plot(intervals_for_compare_for_mean_for_one, "Выборочная среднее", "ones")
+
+    get_plot_to_interval(interval_to_mean_By_unknown_var_and_mean_zeros,
+                         interval_to_mean_By_unknown_var_and_mean_ones,
+                         "interval_to_mean_By_unknown_var_and_mean")
+
+    get_plot_to_interval(interval_to_var_By_unknown_var_and_mean_zeros,
+                         interval_to_var_By_unknown_var_and_mean_ones,
+                         "interval_to_variance_By_unknown_var_and_mean")
+
+    get_plot_to_interval(interval_to_var_zeros, interval_to_var_ones, "interval_to_variance")
+    get_plot_to_interval(interval_to_mean_zeros, interval_to_mean_ones, "interval_to_mean")
+
+    get_plot_to_interval(interval_to_mean_exp_distr_zeros,
+                         interval_to_mean_exp_distr_ones,
+                         "interval to mean exp distr case")
+
+    get_plot_to_interval(interval_to_mean_z, interval_to_mean_o, "interval_to_mean_large_N")
+    get_plot_to_interval(interval_to_var_z, interval_to_var_o, "interval_to_variance_large_N")
+    get_plot(interval_diff_Ex_Ey, "Ex minus Ey")
+    get_plot(interval_div_Dx_Dy, "Dx div Dy")
 
 
 

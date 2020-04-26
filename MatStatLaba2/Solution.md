@@ -8,6 +8,9 @@
 
 (124.35910336089086, 195.33721242858286)
 
+![Alt text](https://github.com/Gerrtty/MatStat/blob/master/MatStatLaba2/plots/interval_to_mean_By_unknown_var_and_mean.png "interval to mean by unknown variance and mean")
+
+
 #### Интервал для дисперсии с неизвестной дисперсией и неизвестным средним (нормальное распределение)
 
 * Для нулей
@@ -17,6 +20,9 @@
 * Для единиц
 
 (7748.316967163037, 19512.36663073406)
+
+![Alt text](https://github.com/Gerrtty/MatStat/blob/master/MatStatLaba2/plots/interval_to_variance_By_unknown_var_and_mean.png "interval to variance by unknown variance and mean")
+
 
 ## 2
 #### Интервал для среднего (нормальное распределение)
@@ -29,6 +35,9 @@
 
 (155.82830546187174, 163.86801032760198)
 
+![Alt text](https://github.com/Gerrtty/MatStat/blob/master/MatStatLaba2/plots/interval_to_mean.png "interval to mean")
+
+
 #### Интервал для дисперсии (нормальное распределение)
 
 * Для нулей
@@ -38,6 +47,8 @@
 * Для единиц
 
 (7581.1434312352985, 18853.221799128438)
+
+![Alt text](https://github.com/Gerrtty/MatStat/blob/master/MatStatLaba2/plots/interval_to_variance.png "interval to variance")
 
 
 ## 3
@@ -51,6 +62,7 @@
 
 (85.20292422489173, 85.29933374189515)
 
+
 ## 4
 #### Интервал для среднего в случае n большого
 
@@ -62,18 +74,34 @@
 
 (154.0755871449103, 165.62072864456343)
 
+![Alt text](https://github.com/Gerrtty/MatStat/blob/master/MatStatLaba2/plots/interval_to_mean_large_N.png "interval to mean in large n case")
+
 
 ## 5
 #### Сравнение
+
+Лучший интервал для среднего для нулей = Interval to mean for zeros data: (188.53072727827893, 205.11199999444833)
+
+![Alt text](https://github.com/Gerrtty/MatStat/blob/master/MatStatLaba2/plots/means_comparing_for_zeros.png "Comparing means for zeros")
+
+
+Лучший интервал для среднего для едениц = Interval to mean for ones data: (155.82830546187174, 163.86801032760198) 
+
+![Alt text](https://github.com/Gerrtty/MatStat/blob/master/MatStatLaba2/plots/means_comparing_for_ones.png"Comparing means for ones")
+
 
 # 6
 #### Разность средних
 
 (-222.99012300085315, 296.9365344841067)
 
+![Alt text](https://github.com/Gerrtty/MatStat/blob/master/MatStatLaba2/plots/Ex%20minus%20Ey.png "Ex minus Ey")
+
 #### Отношение дисперсий
 
-(0.055573325420136994, 0.06269546852167156)
+(0.9017328879500613, 7.126648288082535)
+
+![Alt text](https://github.com/Gerrtty/MatStat/blob/master/MatStatLaba2/plots/Dx%20div%20Dy.png "Dx div Dy")
 
 
 
