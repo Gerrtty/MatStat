@@ -114,9 +114,6 @@
 
 ![Alt text](https://github.com/Gerrtty/MatStat/blob/master/MatStatLaba2/formuls.jpg "formuls")
 
-### Моё решение на python
-
-![Alt text](https://github.com/Gerrtty/MatStat/blob/master/MatStatLaba2/main.py "code")
 
 
 
