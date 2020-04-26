@@ -62,6 +62,8 @@
 
 (85.20292422489173, 85.29933374189515)
 
+![Alt text](https://github.com/Gerrtty/MatStat/blob/master/MatStatLaba2/plots/interval%20to%20mean%20exp%20distr%20case.png "interval to mean in exp distr case")
+
 
 ## 4
 #### Интервал для среднего в случае n большого
@@ -82,12 +84,16 @@
 
 Лучший интервал для среднего для нулей = Interval to mean for zeros data: (188.53072727827893, 205.11199999444833)
 
+(Интервал для среднего в случае неизвестного среднего в случае нормального распределения)
+
 ![Alt text](https://github.com/Gerrtty/MatStat/blob/master/MatStatLaba2/plots/means_comparing_for_zeros.png "Comparing means for zeros")
 
 
 Лучший интервал для среднего для едениц = Interval to mean for ones data: (155.82830546187174, 163.86801032760198) 
 
-![Alt text](https://github.com/Gerrtty/MatStat/blob/master/MatStatLaba2/plots/means_comparing_for_ones.png"Comparing means for ones")
+(Интервал для среднего в случае неизвестного среднего в случае нормального распределения)
+
+![Alt text](https://github.com/Gerrtty/MatStat/blob/master/MatStatLaba2/plots/means_comparing_for_ones.png "Comparing means for ones")
 
 
 # 6
@@ -102,6 +108,15 @@
 (0.9017328879500613, 7.126648288082535)
 
 ![Alt text](https://github.com/Gerrtty/MatStat/blob/master/MatStatLaba2/plots/Dx%20div%20Dy.png "Dx div Dy")
+
+
+### Формулы
+
+![Alt text](https://github.com/Gerrtty/MatStat/blob/master/MatStatLaba2/formuls.jpg "formuls")
+
+### Моё решение на python
+
+![Alt text](https://github.com/Gerrtty/MatStat/blob/master/MatStatLaba2/main.py "code")
 
 
 
