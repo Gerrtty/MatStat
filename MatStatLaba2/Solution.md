@@ -95,6 +95,8 @@
 
 ![Alt text](https://github.com/Gerrtty/MatStat/blob/master/MatStatLaba2/plots/means_comparing_for_ones.png "Comparing means for ones")
 
+##### В качестве лучшего интервала я выбрала наименьший интервал, в который входит выборочное среднее
+
 
 # 6
 #### Разность средних
